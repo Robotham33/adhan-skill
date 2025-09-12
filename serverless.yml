@@ -1,0 +1,104 @@
+service: adhan-routines
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: eu-west-3
+  environment:
+    TABLE: AdhanUsers
+    STATS_TABLE: AdhanStats
+    CLIENT_ID: ${env:CLIENT_ID, ''}
+    CLIENT_SECRET: ${env:CLIENT_SECRET, ''}
+    TRIGGER_STAGE: development
+    TRIGGER_NAME: AdhanTime
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: arn:aws:logs:${self:provider.region}:*:*
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:${self:provider.region}:*:table/AdhanUsers
+            - arn:aws:dynamodb:${self:provider.region}:*:table/AdhanStats
+
+package:
+  individually: true
+
+functions:
+  skillHandler:
+    name: adhan-skill-handler
+    handler: index.handler
+    package:
+      patterns:
+        - ../lambda-skill/**
+        - '!../lambda-skill/package-lock.json'
+        - '!../lambda-skill/.git/**'
+        - '!../lambda-skill/tests/**'
+    events:
+      - alexaSkill: amzn1.ask.skill.1be24097-eba2-4571-8ed3-b558619f9a74
+
+  schedulerMinute:
+    name: adhan-scheduler-minute
+    handler: backend-scheduler/index.handler
+    package:
+      patterns:
+        - ../backend-scheduler/**
+        - '!../backend-scheduler/package-lock.json'
+        - '!../backend-scheduler/.git/**'
+        - '!../backend-scheduler/tests/**'
+    events:
+      - schedule:
+          rate: rate(1 minute)
+          enabled: true
+
+  nightly:
+    name: adhan-nightly
+    handler: backend-scheduler/index.nightlyHandler
+    package:
+      patterns:
+        - ../backend-scheduler/**
+        - '!../backend-scheduler/package-lock.json'
+        - '!../backend-scheduler/.git/**'
+        - '!../backend-scheduler/tests/**'
+    events:
+      - schedule:
+          rate: rate(1 hour)
+          enabled: true
+
+resources:
+  Resources:
+    AdhanStatsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: AdhanStats
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+
+    AdhanUsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: AdhanUsers
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH

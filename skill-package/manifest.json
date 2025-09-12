@@ -1,0 +1,45 @@
+{
+  "manifestVersion": "1.0",
+  "publishingInformation": {
+    "locales": {
+      "en-US": {
+        "name": "Adhan Player",
+        "summary": "Plays the adhan (call to prayer) on demand and via your routine.",
+        "description": "Adhan Player plays the adhan (call to prayer) when you open the skill or when your Alexa routine opens it at prayer time. To start, say: “Alexa, open Adhan Player.” For best results, add a routine that opens the skill at your preferred times.",
+        "examplePhrases": [
+          "Alexa, open Adhan Player",
+          "Alexa, ask Adhan Player to play the adhan",
+          "Alexa, launch Adhan Player"
+        ],
+        "keywords": ["adhan", "prayer", "islam", "call to prayer"]
+      }
+    },
+    "isAvailableWorldwide": true,
+    "testingInstructions": "Say: 'Alexa, open Adhan Player'. You should hear the adhan via SSML <audio>. The skill ends afterward.",
+    "category": "RELIGION_AND_SPIRITUALITY",
+    "distributionCountries": []
+  },
+  "apis": {
+    "custom": {
+      "endpoint": { "uri": "arn:aws:lambda:eu-west-3:251894223886:function:adhan-skill-handler" }
+    }
+  },
+  "privacyAndCompliance": {
+    "locales": {
+      "en-US": {
+        "privacyPolicyUrl": "https://YOUR-DOMAIN/privacy",
+        "termsOfUseUrl": "https://YOUR-DOMAIN/terms"
+      }
+    },
+    "allowsPurchases": false,
+    "usesPersonalInfo": true,
+    "isChildDirected": false,
+    "isExportCompliant": true,
+    "containsAds": false,
+    "isHealthcareSkill": false,
+    "isFinancialServiceSkill": false
+  },
+  "permissions": [],
+  "events": {},
+  "manifestVersionCode": 1
+}

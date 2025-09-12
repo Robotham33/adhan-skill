@@ -1,0 +1,13 @@
+{
+  "name": "adhan-skill",
+  "version": "1.2.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.637.0",
+    "ask-sdk-core": "^2.14.0",
+    "i18next": "^25.5.2",
+    "i18next-sprintf-postprocessor": "^0.2.2",
+    "node-fetch": "^3.3.2"
+  }
+}

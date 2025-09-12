@@ -1,0 +1,24 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "adhan player",
+      "intents": [
+        { "name": "AMAZON.CancelIntent", "samples": [] },
+        { "name": "AMAZON.StopIntent", "samples": [] },
+        { "name": "AMAZON.HelpIntent", "samples": [] },
+        { "name": "AMAZON.FallbackIntent", "samples": [] },
+        {
+          "name": "PlayAdhanIntent",
+          "slots": [],
+          "samples": [
+            "play the adhan",
+            "play adhan",
+            "start adhan",
+            "play the call to prayer"
+          ]
+        }
+      ],
+      "types": []
+    }
+  }
+}

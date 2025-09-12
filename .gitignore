@@ -1,0 +1,14 @@
+# Ne pas versionner les dépendances
+node_modules/
+
+# Fichiers de configuration locaux
+.env
+
+# Fichiers temporaires macOS / Linux
+.DS_Store
+
+# Fichiers VS Code (éditeur)
+.vscode/
+
+# Fichiers de logs
+*.log

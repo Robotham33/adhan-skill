@@ -1,0 +1,12 @@
+{
+  "name": "adhan-backend-scheduler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "adhan": "^4.4.2",
+    "aws-sdk": "^2.1612.0",
+    "luxon": "^3.5.0",
+    "node-fetch": "^3.3.2"
+  }
+}

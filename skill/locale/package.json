@@ -1,0 +1,9 @@
+{
+  "name": "adhan-skill-handler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "ask-sdk-core": "^2.13.0"
+  }
+}

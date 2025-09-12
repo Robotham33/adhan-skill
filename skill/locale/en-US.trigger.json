@@ -1,0 +1,12 @@
+{
+  "triggers": [
+    {
+      "name": "AdhanTime",
+      "title": "Adhan time",
+      "delivery": "UNICAST",
+      "description": "Fires at prayer time to launch the skill and play the adhan.",
+      "inputs": [],
+      "dynamicParameters": false
+    }
+  ]
+}

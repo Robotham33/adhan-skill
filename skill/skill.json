@@ -1,0 +1,39 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-US": { "name": "Adhan Player" },
+        "fr-FR": { "name": "Adhan Player" }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "Say 'Alexa, open Adhan Player'. A routine launches the skill to play the adhan.",
+      "category": "RELIGION_AND_SPIRITUALITY"
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:YOUR_AWS_REGION:YOUR_AWS_ACCOUNT_ID:function:adhan-skill-handler"
+        }
+      },
+      "routines": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:YOUR_AWS_REGION:YOUR_AWS_ACCOUNT_ID:function:adhan-skill-handler"
+        }
+      }
+    },
+    "permissions": [
+      { "name": "alexa::alerts:reminders:skill:readwrite" }
+    ],
+    "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "locales": { "en-US": {}, "fr-FR": {} },
+      "allowsPurchases": false,
+      "isExportCompliant": true,
+      "containsAds": false,
+      "usesPersonalInfo": true,
+      "isChildDirected": false,
+      "isHealthcareSkill": false,
+      "isFinancialServiceSkill": false
+    }
+  }
+}
