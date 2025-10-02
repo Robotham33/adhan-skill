@@ -4,9 +4,11 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "adhan": "^4.4.2",
-    "aws-sdk": "^2.1612.0",
-    "luxon": "^3.5.0",
+    "adhan": "^4.4.3",
+    "luxon": "^3.7.2",
     "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "serverless-esbuild": "^1.55.1"
   }
 }

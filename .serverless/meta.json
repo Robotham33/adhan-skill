@@ -1,0 +1,1592 @@
+{
+  "/workspaces/adhan-skill/serverless.yml": {
+    "versionFramework": "4.19.1",
+    "servicePath": "/workspaces/adhan-skill/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "adhan-routines",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs18.x",
+        "region": "eu-west-3",
+        "deploymentBucket": "adhan-skill-deployment-bucket",
+        "environment": {
+          "TABLE": "AdhanUsers",
+          "STATS_TABLE": "AdhanStats",
+          "CLIENT_ID": "",
+          "CLIENT_SECRET": "<REDACTED>",
+          "TRIGGER_STAGE": "development",
+          "TRIGGER_NAME": "AdhanTime"
+        },
+        "iam": {
+          "role": {
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "arn:aws:logs:eu-west-3:*:*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:PutItem",
+                  "dynamodb:GetItem",
+                  "dynamodb:UpdateItem",
+                  "dynamodb:DeleteItem",
+                  "dynamodb:Query",
+                  "dynamodb:Scan",
+                  "dynamodb:DescribeTable"
+                ],
+                "Resource": [
+                  "arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers",
+                  "arn:aws:dynamodb:eu-west-3:*:table/AdhanStats"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "events:DescribeRule",
+                  "events:PutRule",
+                  "events:PutTargets",
+                  "events:RemoveTargets",
+                  "events:DeleteRule"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ssm:GetParameter",
+                  "ssm:PutParameter",
+                  "ssm:DeleteParameter"
+                ],
+                "Resource": "arn:aws:ssm:eu-west-3:*:parameter/serverless-framework/*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:CreateBucket",
+                  "s3:PutObject",
+                  "s3:DeleteObject",
+                  "s3:ListBucket",
+                  "s3:GetObject"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        },
+        "stage": "dev",
+        "versionFunctions": true,
+        "deploymentBucketObject": {
+          "name": "adhan-skill-deployment-bucket"
+        },
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "SchedulerMinuteLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/adhan-scheduler-minute"
+              }
+            },
+            "NightlyLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/adhan-nightly"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "adhan-routines",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*"
+                            },
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-nightly:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*:*"
+                            },
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-nightly:*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogGroup",
+                            "logs:CreateLogStream",
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": "arn:aws:logs:eu-west-3:*:*"
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "dynamodb:PutItem",
+                            "dynamodb:GetItem",
+                            "dynamodb:UpdateItem",
+                            "dynamodb:DeleteItem",
+                            "dynamodb:Query",
+                            "dynamodb:Scan",
+                            "dynamodb:DescribeTable"
+                          ],
+                          "Resource": [
+                            "arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers",
+                            "arn:aws:dynamodb:eu-west-3:*:table/AdhanStats"
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "events:DescribeRule",
+                            "events:PutRule",
+                            "events:PutTargets",
+                            "events:RemoveTargets",
+                            "events:DeleteRule"
+                          ],
+                          "Resource": "*"
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "ssm:GetParameter",
+                            "ssm:PutParameter",
+                            "ssm:DeleteParameter"
+                          ],
+                          "Resource": "arn:aws:ssm:eu-west-3:*:parameter/serverless-framework/*"
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "s3:CreateBucket",
+                            "s3:PutObject",
+                            "s3:DeleteObject",
+                            "s3:ListBucket",
+                            "s3:GetObject"
+                          ],
+                          "Resource": "*"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "adhan-routines",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            },
+            "SchedulerMinuteLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "adhan-skill-deployment-bucket",
+                  "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/schedulerMinute.zip"
+                },
+                "Handler": "backend-scheduler/index.handler",
+                "Runtime": "nodejs18.x",
+                "FunctionName": "adhan-scheduler-minute",
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Environment": {
+                  "Variables": {
+                    "TABLE": "AdhanUsers",
+                    "STATS_TABLE": "AdhanStats",
+                    "CLIENT_ID": "",
+                    "CLIENT_SECRET": "<REDACTED>",
+                    "TRIGGER_STAGE": "development",
+                    "TRIGGER_NAME": "AdhanTime"
+                  }
+                },
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "SchedulerMinuteLogGroup"
+              ]
+            },
+            "NightlyLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "adhan-skill-deployment-bucket",
+                  "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/nightly.zip"
+                },
+                "Handler": "backend-scheduler/index.nightlyHandler",
+                "Runtime": "nodejs18.x",
+                "FunctionName": "adhan-nightly",
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Environment": {
+                  "Variables": {
+                    "TABLE": "AdhanUsers",
+                    "STATS_TABLE": "AdhanStats",
+                    "CLIENT_ID": "",
+                    "CLIENT_SECRET": "<REDACTED>",
+                    "TRIGGER_STAGE": "development",
+                    "TRIGGER_NAME": "AdhanTime"
+                  }
+                },
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "NightlyLogGroup"
+              ]
+            },
+            "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "SchedulerMinuteLambdaFunction"
+                },
+                "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
+              }
+            },
+            "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "NightlyLambdaFunction"
+                },
+                "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
+              }
+            },
+            "Adhanschedulerminuterule1EventBridgeRule": {
+              "Type": "AWS::Events::Rule",
+              "Properties": {
+                "Name": "adhan-scheduler-minute-rule-1",
+                "ScheduleExpression": "rate(1 minute)",
+                "State": "ENABLED",
+                "Targets": [
+                  {
+                    "Arn": {
+                      "Fn::GetAtt": [
+                        "SchedulerMinuteLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "Id": "adhan-scheduler-minute-rule-1-target"
+                  }
+                ]
+              }
+            },
+            "SchedulerMinuteEventBridgeLambdaPermission1": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "SchedulerMinuteLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Principal": "events.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      "events",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      {
+                        "Fn::Join": [
+                          "/",
+                          [
+                            "rule",
+                            "adhan-scheduler-minute-rule-1"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            },
+            "Adhannightlyrule1EventBridgeRule": {
+              "Type": "AWS::Events::Rule",
+              "Properties": {
+                "Name": "adhan-nightly-rule-1",
+                "ScheduleExpression": "rate(1 hour)",
+                "State": "ENABLED",
+                "Targets": [
+                  {
+                    "Arn": {
+                      "Fn::GetAtt": [
+                        "NightlyLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "Id": "adhan-nightly-rule-1-target"
+                  }
+                ]
+              }
+            },
+            "NightlyEventBridgeLambdaPermission1": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "NightlyLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Principal": "events.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      "events",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      {
+                        "Fn::Join": [
+                          "/",
+                          [
+                            "rule",
+                            "adhan-nightly-rule-1"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            },
+            "AdhanStatsTable": {
+              "Type": "AWS::DynamoDB::Table",
+              "Properties": {
+                "TableName": "AdhanStats",
+                "BillingMode": "PAY_PER_REQUEST",
+                "AttributeDefinitions": [
+                  {
+                    "AttributeName": "pk",
+                    "AttributeType": "S"
+                  }
+                ],
+                "KeySchema": [
+                  {
+                    "AttributeName": "pk",
+                    "KeyType": "HASH"
+                  }
+                ]
+              }
+            },
+            "AdhanUsersTable": {
+              "Type": "AWS::DynamoDB::Table",
+              "Properties": {
+                "TableName": "AdhanUsers",
+                "BillingMode": "PAY_PER_REQUEST",
+                "AttributeDefinitions": [
+                  {
+                    "AttributeName": "userId",
+                    "AttributeType": "S"
+                  }
+                ],
+                "KeySchema": [
+                  {
+                    "AttributeName": "userId",
+                    "KeyType": "HASH"
+                  }
+                ]
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "adhan-skill-deployment-bucket",
+              "Export": {
+                "Name": "sls-adhan-routines-dev-ServerlessDeploymentBucketName"
+              }
+            },
+            "SchedulerMinuteLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE"
+              },
+              "Export": {
+                "Name": "sls-adhan-routines-dev-SchedulerMinuteLambdaFunctionQualifiedArn"
+              }
+            },
+            "NightlyLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc"
+              },
+              "Export": {
+                "Name": "sls-adhan-routines-dev-NightlyLambdaFunctionQualifiedArn"
+              }
+            }
+          }
+        },
+        "vpc": {}
+      },
+      "package": {
+        "individually": true,
+        "patterns": [
+          "!**/*",
+          "backend-scheduler/**",
+          "!backend-scheduler/node_modules/**",
+          "backend-scheduler/node_modules/luxon/**",
+          "backend-scheduler/node_modules/node-fetch/**",
+          "backend-scheduler/node_modules/adhan/**"
+        ],
+        "artifactsS3KeyDirname": "serverless/adhan-routines/dev/code-artifacts",
+        "deploymentBucket": "adhan-skill-deployment-bucket",
+        "artifactDirectoryName": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z"
+      },
+      "functions": {
+        "schedulerMinute": {
+          "name": "adhan-scheduler-minute",
+          "handler": "backend-scheduler/index.handler",
+          "events": [
+            {
+              "eventBridge": {
+                "schedule": "rate(1 minute)"
+              }
+            }
+          ],
+          "package": {
+            "artifact": ".serverless/schedulerMinute.zip"
+          },
+          "memory": 1024,
+          "timeout": 6,
+          "runtime": "nodejs18.x",
+          "vpc": {},
+          "versionLogicalId": "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE"
+        },
+        "nightly": {
+          "name": "adhan-nightly",
+          "handler": "backend-scheduler/index.nightlyHandler",
+          "events": [
+            {
+              "eventBridge": {
+                "schedule": "rate(1 hour)"
+              }
+            }
+          ],
+          "package": {
+            "artifact": ".serverless/nightly.zip"
+          },
+          "memory": 1024,
+          "timeout": 6,
+          "runtime": "nodejs18.x",
+          "vpc": {},
+          "versionLogicalId": "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc"
+        }
+      },
+      "resources": {
+        "Resources": {
+          "AdhanStatsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "AdhanStats",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "pk",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "pk",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          },
+          "AdhanUsersTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "AdhanUsers",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "userId",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "userId",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {}
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs18.x",
+      "region": "eu-west-3",
+      "deploymentBucket": "adhan-skill-deployment-bucket",
+      "environment": {
+        "TABLE": "AdhanUsers",
+        "STATS_TABLE": "AdhanStats",
+        "CLIENT_ID": "",
+        "CLIENT_SECRET": "<REDACTED>",
+        "TRIGGER_STAGE": "development",
+        "TRIGGER_NAME": "AdhanTime"
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "arn:aws:logs:eu-west-3:*:*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:DescribeTable"
+              ],
+              "Resource": [
+                "arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers",
+                "arn:aws:dynamodb:eu-west-3:*:table/AdhanStats"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "events:DescribeRule",
+                "events:PutRule",
+                "events:PutTargets",
+                "events:RemoveTargets",
+                "events:DeleteRule"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ssm:GetParameter",
+                "ssm:PutParameter",
+                "ssm:DeleteParameter"
+              ],
+              "Resource": "arn:aws:ssm:eu-west-3:*:parameter/serverless-framework/*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:CreateBucket",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:ListBucket",
+                "s3:GetObject"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      },
+      "stage": "dev",
+      "versionFunctions": true,
+      "deploymentBucketObject": {
+        "name": "adhan-skill-deployment-bucket"
+      },
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "SchedulerMinuteLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/adhan-scheduler-minute"
+            }
+          },
+          "NightlyLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/adhan-nightly"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "adhan-routines",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-nightly:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*:*"
+                          },
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-nightly:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogGroup",
+                          "logs:CreateLogStream",
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": "arn:aws:logs:eu-west-3:*:*"
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "dynamodb:PutItem",
+                          "dynamodb:GetItem",
+                          "dynamodb:UpdateItem",
+                          "dynamodb:DeleteItem",
+                          "dynamodb:Query",
+                          "dynamodb:Scan",
+                          "dynamodb:DescribeTable"
+                        ],
+                        "Resource": [
+                          "arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers",
+                          "arn:aws:dynamodb:eu-west-3:*:table/AdhanStats"
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "events:DescribeRule",
+                          "events:PutRule",
+                          "events:PutTargets",
+                          "events:RemoveTargets",
+                          "events:DeleteRule"
+                        ],
+                        "Resource": "*"
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "ssm:GetParameter",
+                          "ssm:PutParameter",
+                          "ssm:DeleteParameter"
+                        ],
+                        "Resource": "arn:aws:ssm:eu-west-3:*:parameter/serverless-framework/*"
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "s3:CreateBucket",
+                          "s3:PutObject",
+                          "s3:DeleteObject",
+                          "s3:ListBucket",
+                          "s3:GetObject"
+                        ],
+                        "Resource": "*"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "adhan-routines",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "SchedulerMinuteLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "adhan-skill-deployment-bucket",
+                "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/schedulerMinute.zip"
+              },
+              "Handler": "backend-scheduler/index.handler",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "adhan-scheduler-minute",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "TABLE": "AdhanUsers",
+                  "STATS_TABLE": "AdhanStats",
+                  "CLIENT_ID": "",
+                  "CLIENT_SECRET": "<REDACTED>",
+                  "TRIGGER_STAGE": "development",
+                  "TRIGGER_NAME": "AdhanTime"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "SchedulerMinuteLogGroup"
+            ]
+          },
+          "NightlyLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "adhan-skill-deployment-bucket",
+                "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/nightly.zip"
+              },
+              "Handler": "backend-scheduler/index.nightlyHandler",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "adhan-nightly",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "TABLE": "AdhanUsers",
+                  "STATS_TABLE": "AdhanStats",
+                  "CLIENT_ID": "",
+                  "CLIENT_SECRET": "<REDACTED>",
+                  "TRIGGER_STAGE": "development",
+                  "TRIGGER_NAME": "AdhanTime"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "NightlyLogGroup"
+            ]
+          },
+          "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SchedulerMinuteLambdaFunction"
+              },
+              "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
+            }
+          },
+          "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "NightlyLambdaFunction"
+              },
+              "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
+            }
+          },
+          "Adhanschedulerminuterule1EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "Name": "adhan-scheduler-minute-rule-1",
+              "ScheduleExpression": "rate(1 minute)",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "SchedulerMinuteLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "adhan-scheduler-minute-rule-1-target"
+                }
+              ]
+            }
+          },
+          "SchedulerMinuteEventBridgeLambdaPermission1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SchedulerMinuteLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Principal": "events.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  ":",
+                  [
+                    "arn",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    "events",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    {
+                      "Fn::Join": [
+                        "/",
+                        [
+                          "rule",
+                          "adhan-scheduler-minute-rule-1"
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          "Adhannightlyrule1EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "Name": "adhan-nightly-rule-1",
+              "ScheduleExpression": "rate(1 hour)",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "NightlyLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "adhan-nightly-rule-1-target"
+                }
+              ]
+            }
+          },
+          "NightlyEventBridgeLambdaPermission1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "NightlyLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Principal": "events.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  ":",
+                  [
+                    "arn",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    "events",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    {
+                      "Fn::Join": [
+                        "/",
+                        [
+                          "rule",
+                          "adhan-nightly-rule-1"
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          "AdhanStatsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "AdhanStats",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "pk",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "pk",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          },
+          "AdhanUsersTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "AdhanUsers",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "userId",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "userId",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "adhan-skill-deployment-bucket",
+            "Export": {
+              "Name": "sls-adhan-routines-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "SchedulerMinuteLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE"
+            },
+            "Export": {
+              "Name": "sls-adhan-routines-dev-SchedulerMinuteLambdaFunctionQualifiedArn"
+            }
+          },
+          "NightlyLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc"
+            },
+            "Export": {
+              "Name": "sls-adhan-routines-dev-NightlyLambdaFunctionQualifiedArn"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: adhan-routines\n\nprovider:\n  name: aws\n  runtime: nodejs18.x\n  region: eu-west-3\n  deploymentBucket:\n    name: adhan-skill-deployment-bucket\n  environment:\n    TABLE: AdhanUsers\n    STATS_TABLE: AdhanStats\n    CLIENT_ID: ${env:CLIENT_ID, ''}\n    CLIENT_SECRET: ${env:CLIENT_SECRET, ''}\n    TRIGGER_STAGE: development\n    TRIGGER_NAME: AdhanTime\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - logs:CreateLogGroup\n            - logs:CreateLogStream\n            - logs:PutLogEvents\n          Resource: arn:aws:logs:${self:provider.region}:*:*\n        - Effect: Allow\n          Action:\n            - dynamodb:PutItem\n            - dynamodb:GetItem\n            - dynamodb:UpdateItem\n            - dynamodb:DeleteItem\n            - dynamodb:Query\n            - dynamodb:Scan\n            - dynamodb:DescribeTable\n          Resource:\n            - arn:aws:dynamodb:${self:provider.region}:*:table/AdhanUsers\n            - arn:aws:dynamodb:${self:provider.region}:*:table/AdhanStats\n        - Effect: Allow\n          Action:\n            - events:DescribeRule\n            - events:PutRule\n            - events:PutTargets\n            - events:RemoveTargets\n            - events:DeleteRule\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - ssm:GetParameter\n            - ssm:PutParameter\n            - ssm:DeleteParameter\n          Resource: arn:aws:ssm:${self:provider.region}:*:parameter/serverless-framework/*\n        - Effect: Allow\n          Action:\n            - s3:CreateBucket\n            - s3:PutObject\n            - s3:DeleteObject\n            - s3:ListBucket\n            - s3:GetObject\n          Resource: \"*\"\n\npackage:\n  individually: true\n  patterns:\n    - '!**/*'                           # ignore tout par défaut\n    - 'backend-scheduler/**'            # inclut seulement ton code backend\n    - '!backend-scheduler/node_modules/**'\n    - 'backend-scheduler/node_modules/luxon/**'\n    - 'backend-scheduler/node_modules/node-fetch/**'\n    - 'backend-scheduler/node_modules/adhan/**'\n\nfunctions:\n  schedulerMinute:\n    name: adhan-scheduler-minute\n    handler: backend-scheduler/index.handler\n    events:\n      - eventBridge:\n          schedule: rate(1 minute)\n\n  nightly:\n    name: adhan-nightly\n    handler: backend-scheduler/index.nightlyHandler\n    events:\n      - eventBridge:\n          schedule: rate(1 hour)\n\nresources:\n  Resources:\n    AdhanStatsTable:\n      Type: AWS::DynamoDB::Table\n      Properties:\n        TableName: AdhanStats\n        BillingMode: PAY_PER_REQUEST\n        AttributeDefinitions:\n          - AttributeName: pk\n            AttributeType: S\n        KeySchema:\n          - AttributeName: pk\n            KeyType: HASH\n\n    AdhanUsersTable:\n      Type: AWS::DynamoDB::Table\n      Properties:\n        TableName: AdhanUsers\n        BillingMode: PAY_PER_REQUEST\n        AttributeDefinitions:\n          - AttributeName: userId\n            AttributeType: S\n        KeySchema:\n          - AttributeName: userId\n            KeyType: HASH\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "orgId": "4c8cb5f2-2536-4b5d-a657-19ac727daa9d",
+    "orgName": "robotham",
+    "userId": "QSZ25Mnhm1dDMK8M0M",
+    "userName": "robotham",
+    "serviceProviderAwsAccountId": "251894223886",
+    "serviceProviderAwsCfStackName": "adhan-routines-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-3:251894223886:stack/adhan-routines-dev/7c456260-9f99-11f0-b4db-0e5db2106bed",
+    "serviceProviderAwsCfStackCreated": "2025-10-02T14:10:01.645Z",
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "SchedulerMinuteLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:eu-west-3:251894223886:function:adhan-scheduler-minute:9",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-adhan-routines-dev-SchedulerMinuteLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "NightlyLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:eu-west-3:251894223886:function:adhan-nightly:9",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-adhan-routines-dev-NightlyLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "adhan-skill-deployment-bucket",
+        "ExportName": "sls-adhan-routines-dev-ServerlessDeploymentBucketName"
+      }
+    ],
+    "compiledCloudFormationTemplate": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "The AWS CloudFormation template for this Serverless application",
+      "Resources": {
+        "SchedulerMinuteLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/adhan-scheduler-minute"
+          }
+        },
+        "NightlyLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/adhan-nightly"
+          }
+        },
+        "IamRoleLambdaExecution": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [
+                      "lambda.amazonaws.com"
+                    ]
+                  },
+                  "Action": [
+                    "sts:AssumeRole"
+                  ]
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "adhan-routines",
+                      "dev",
+                      "lambda"
+                    ]
+                  ]
+                },
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:CreateLogGroup",
+                        "logs:TagResource"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*"
+                        },
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-nightly:*"
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:PutLogEvents"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*:*"
+                        },
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-nightly:*:*"
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "Resource": "arn:aws:logs:eu-west-3:*:*"
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "dynamodb:PutItem",
+                        "dynamodb:GetItem",
+                        "dynamodb:UpdateItem",
+                        "dynamodb:DeleteItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan",
+                        "dynamodb:DescribeTable"
+                      ],
+                      "Resource": [
+                        "arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers",
+                        "arn:aws:dynamodb:eu-west-3:*:table/AdhanStats"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "events:DescribeRule",
+                        "events:PutRule",
+                        "events:PutTargets",
+                        "events:RemoveTargets",
+                        "events:DeleteRule"
+                      ],
+                      "Resource": "*"
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "ssm:GetParameter",
+                        "ssm:PutParameter",
+                        "ssm:DeleteParameter"
+                      ],
+                      "Resource": "arn:aws:ssm:eu-west-3:*:parameter/serverless-framework/*"
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "s3:CreateBucket",
+                        "s3:PutObject",
+                        "s3:DeleteObject",
+                        "s3:ListBucket",
+                        "s3:GetObject"
+                      ],
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Path": "/",
+            "RoleName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "adhan-routines",
+                  "dev",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "lambdaRole"
+                ]
+              ]
+            }
+          }
+        },
+        "SchedulerMinuteLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "adhan-skill-deployment-bucket",
+              "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/schedulerMinute.zip"
+            },
+            "Handler": "backend-scheduler/index.handler",
+            "Runtime": "nodejs18.x",
+            "FunctionName": "adhan-scheduler-minute",
+            "MemorySize": 1024,
+            "Timeout": 6,
+            "Environment": {
+              "Variables": {
+                "TABLE": "AdhanUsers",
+                "STATS_TABLE": "AdhanStats",
+                "CLIENT_ID": "",
+                "CLIENT_SECRET": "<REDACTED>",
+                "TRIGGER_STAGE": "development",
+                "TRIGGER_NAME": "AdhanTime"
+              }
+            },
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "SchedulerMinuteLogGroup"
+          ]
+        },
+        "NightlyLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "adhan-skill-deployment-bucket",
+              "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/nightly.zip"
+            },
+            "Handler": "backend-scheduler/index.nightlyHandler",
+            "Runtime": "nodejs18.x",
+            "FunctionName": "adhan-nightly",
+            "MemorySize": 1024,
+            "Timeout": 6,
+            "Environment": {
+              "Variables": {
+                "TABLE": "AdhanUsers",
+                "STATS_TABLE": "AdhanStats",
+                "CLIENT_ID": "",
+                "CLIENT_SECRET": "<REDACTED>",
+                "TRIGGER_STAGE": "development",
+                "TRIGGER_NAME": "AdhanTime"
+              }
+            },
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "NightlyLogGroup"
+          ]
+        },
+        "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "SchedulerMinuteLambdaFunction"
+            },
+            "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
+          }
+        },
+        "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "NightlyLambdaFunction"
+            },
+            "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
+          }
+        },
+        "Adhanschedulerminuterule1EventBridgeRule": {
+          "Type": "AWS::Events::Rule",
+          "Properties": {
+            "Name": "adhan-scheduler-minute-rule-1",
+            "ScheduleExpression": "rate(1 minute)",
+            "State": "ENABLED",
+            "Targets": [
+              {
+                "Arn": {
+                  "Fn::GetAtt": [
+                    "SchedulerMinuteLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Id": "adhan-scheduler-minute-rule-1-target"
+              }
+            ]
+          }
+        },
+        "SchedulerMinuteEventBridgeLambdaPermission1": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "Action": "lambda:InvokeFunction",
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "SchedulerMinuteLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Principal": "events.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                ":",
+                [
+                  "arn",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  "events",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  {
+                    "Fn::Join": [
+                      "/",
+                      [
+                        "rule",
+                        "adhan-scheduler-minute-rule-1"
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        "Adhannightlyrule1EventBridgeRule": {
+          "Type": "AWS::Events::Rule",
+          "Properties": {
+            "Name": "adhan-nightly-rule-1",
+            "ScheduleExpression": "rate(1 hour)",
+            "State": "ENABLED",
+            "Targets": [
+              {
+                "Arn": {
+                  "Fn::GetAtt": [
+                    "NightlyLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Id": "adhan-nightly-rule-1-target"
+              }
+            ]
+          }
+        },
+        "NightlyEventBridgeLambdaPermission1": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "Action": "lambda:InvokeFunction",
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "NightlyLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Principal": "events.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                ":",
+                [
+                  "arn",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  "events",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  {
+                    "Fn::Join": [
+                      "/",
+                      [
+                        "rule",
+                        "adhan-nightly-rule-1"
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        "AdhanStatsTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "AdhanStats",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "pk",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "pk",
+                "KeyType": "HASH"
+              }
+            ]
+          }
+        },
+        "AdhanUsersTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "AdhanUsers",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "userId",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "userId",
+                "KeyType": "HASH"
+              }
+            ]
+          }
+        }
+      },
+      "Outputs": {
+        "ServerlessDeploymentBucketName": {
+          "Value": "adhan-skill-deployment-bucket",
+          "Export": {
+            "Name": "sls-adhan-routines-dev-ServerlessDeploymentBucketName"
+          }
+        },
+        "SchedulerMinuteLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE"
+          },
+          "Export": {
+            "Name": "sls-adhan-routines-dev-SchedulerMinuteLambdaFunctionQualifiedArn"
+          }
+        },
+        "NightlyLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc"
+          },
+          "Export": {
+            "Name": "sls-adhan-routines-dev-NightlyLambdaFunctionQualifiedArn"
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,81 +2,6 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "The AWS CloudFormation template for this Serverless application",
   "Resources": {
-    "ServerlessDeploymentBucket": {
-      "Type": "AWS::S3::Bucket",
-      "Properties": {
-        "BucketEncryption": {
-          "ServerSideEncryptionConfiguration": [
-            {
-              "ServerSideEncryptionByDefault": {
-                "SSEAlgorithm": "AES256"
-              }
-            }
-          ]
-        }
-      }
-    },
-    "ServerlessDeploymentBucketPolicy": {
-      "Type": "AWS::S3::BucketPolicy",
-      "Properties": {
-        "Bucket": {
-          "Ref": "ServerlessDeploymentBucket"
-        },
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": "s3:*",
-              "Effect": "Deny",
-              "Principal": "*",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition"
-                      },
-                      ":s3:::",
-                      {
-                        "Ref": "ServerlessDeploymentBucket"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition"
-                      },
-                      ":s3:::",
-                      {
-                        "Ref": "ServerlessDeploymentBucket"
-                      }
-                    ]
-                  ]
-                }
-              ],
-              "Condition": {
-                "Bool": {
-                  "aws:SecureTransport": false
-                }
-              }
-            }
-          ]
-        }
-      }
-    },
-    "SkillHandlerLogGroup": {
-      "Type": "AWS::Logs::LogGroup",
-      "Properties": {
-        "LogGroupName": "/aws/lambda/adhan-skill-handler"
-      }
-    },
     "SchedulerMinuteLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
@@ -132,9 +57,6 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-skill-handler:*"
-                    },
-                    {
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*"
                     },
                     {
@@ -148,9 +70,6 @@
                     "logs:PutLogEvents"
                   ],
                   "Resource": [
-                    {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-skill-handler:*:*"
-                    },
                     {
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/adhan-scheduler-minute:*:*"
                     },
@@ -176,12 +95,44 @@
                     "dynamodb:UpdateItem",
                     "dynamodb:DeleteItem",
                     "dynamodb:Query",
-                    "dynamodb:Scan"
+                    "dynamodb:Scan",
+                    "dynamodb:DescribeTable"
                   ],
                   "Resource": [
                     "arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers",
                     "arn:aws:dynamodb:eu-west-3:*:table/AdhanStats"
                   ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:DescribeRule",
+                    "events:PutRule",
+                    "events:PutTargets",
+                    "events:RemoveTargets",
+                    "events:DeleteRule"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ssm:GetParameter",
+                    "ssm:PutParameter",
+                    "ssm:DeleteParameter"
+                  ],
+                  "Resource": "arn:aws:ssm:eu-west-3:*:parameter/serverless-framework/*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:CreateBucket",
+                    "s3:PutObject",
+                    "s3:DeleteObject",
+                    "s3:ListBucket",
+                    "s3:GetObject"
+                  ],
+                  "Resource": "*"
                 }
               ]
             }
@@ -203,49 +154,12 @@
         }
       }
     },
-    "SkillHandlerLambdaFunction": {
-      "Type": "AWS::Lambda::Function",
-      "Properties": {
-        "Code": {
-          "S3Bucket": {
-            "Ref": "ServerlessDeploymentBucket"
-          },
-          "S3Key": "serverless/adhan-routines/dev/1757673358654-2025-09-12T10:35:58.654Z/skillHandler.zip"
-        },
-        "Handler": "index.handler",
-        "Runtime": "nodejs18.x",
-        "FunctionName": "adhan-skill-handler",
-        "MemorySize": 1024,
-        "Timeout": 6,
-        "Environment": {
-          "Variables": {
-            "TABLE": "AdhanUsers",
-            "STATS_TABLE": "AdhanStats",
-            "CLIENT_ID": "",
-            "CLIENT_SECRET": "",
-            "TRIGGER_STAGE": "development",
-            "TRIGGER_NAME": "AdhanTime"
-          }
-        },
-        "Role": {
-          "Fn::GetAtt": [
-            "IamRoleLambdaExecution",
-            "Arn"
-          ]
-        }
-      },
-      "DependsOn": [
-        "SkillHandlerLogGroup"
-      ]
-    },
     "SchedulerMinuteLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": {
-            "Ref": "ServerlessDeploymentBucket"
-          },
-          "S3Key": "serverless/adhan-routines/dev/1757673358654-2025-09-12T10:35:58.654Z/schedulerMinute.zip"
+          "S3Bucket": "adhan-skill-deployment-bucket",
+          "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/schedulerMinute.zip"
         },
         "Handler": "backend-scheduler/index.handler",
         "Runtime": "nodejs18.x",
@@ -277,10 +191,8 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": {
-            "Ref": "ServerlessDeploymentBucket"
-          },
-          "S3Key": "serverless/adhan-routines/dev/1757673358654-2025-09-12T10:35:58.654Z/nightly.zip"
+          "S3Bucket": "adhan-skill-deployment-bucket",
+          "S3Key": "serverless/adhan-routines/dev/1759414199931-2025-10-02T14:09:59.931Z/nightly.zip"
         },
         "Handler": "backend-scheduler/index.nightlyHandler",
         "Runtime": "nodejs18.x",
@@ -308,39 +220,30 @@
         "NightlyLogGroup"
       ]
     },
-    "SkillHandlerLambdaVersionplJOsLjXPPRrQvYXYCU8WgrpqyRfhTNvYeAx6z3Qg": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "SkillHandlerLambdaFunction"
-        },
-        "CodeSha256": "rWkT3Vif2o8Gd7GDU2TZroKoVo5BOY6DULK4AonqH3I="
-      }
-    },
-    "NightlyLambdaVersionwNynMHNtjcXX1rWf0vXCpOX8HzyxoMUR486TmNWL7c": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "NightlyLambdaFunction"
-        },
-        "CodeSha256": "rWkT3Vif2o8Gd7GDU2TZroKoVo5BOY6DULK4AonqH3I="
-      }
-    },
-    "SchedulerMinuteLambdaVersion1AnvIzNILTos2FKP7S1K1LXz2WdoshRdpfyIQqr0OJY": {
+    "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "SchedulerMinuteLambdaFunction"
         },
-        "CodeSha256": "rWkT3Vif2o8Gd7GDU2TZroKoVo5BOY6DULK4AonqH3I="
+        "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
       }
     },
-    "SchedulerMinuteEventsRuleSchedule1": {
+    "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "NightlyLambdaFunction"
+        },
+        "CodeSha256": "D5iLbr1+SbAcHsuWPYgDTV6apKAO9WnfxZxsy4KGTZ8="
+      }
+    },
+    "Adhanschedulerminuterule1EventBridgeRule": {
       "Type": "AWS::Events::Rule",
       "Properties": {
+        "Name": "adhan-scheduler-minute-rule-1",
         "ScheduleExpression": "rate(1 minute)",
         "State": "ENABLED",
         "Targets": [
@@ -351,33 +254,55 @@
                 "Arn"
               ]
             },
-            "Id": "schedulerMinuteSchedule"
+            "Id": "adhan-scheduler-minute-rule-1-target"
           }
         ]
       }
     },
-    "SchedulerMinuteLambdaPermissionEventsRuleSchedule1": {
+    "SchedulerMinuteEventBridgeLambdaPermission1": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
+        "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
             "SchedulerMinuteLambdaFunction",
             "Arn"
           ]
         },
-        "Action": "lambda:InvokeFunction",
         "Principal": "events.amazonaws.com",
         "SourceArn": {
-          "Fn::GetAtt": [
-            "SchedulerMinuteEventsRuleSchedule1",
-            "Arn"
+          "Fn::Join": [
+            ":",
+            [
+              "arn",
+              {
+                "Ref": "AWS::Partition"
+              },
+              "events",
+              {
+                "Ref": "AWS::Region"
+              },
+              {
+                "Ref": "AWS::AccountId"
+              },
+              {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "rule",
+                    "adhan-scheduler-minute-rule-1"
+                  ]
+                ]
+              }
+            ]
           ]
         }
       }
     },
-    "NightlyEventsRuleSchedule1": {
+    "Adhannightlyrule1EventBridgeRule": {
       "Type": "AWS::Events::Rule",
       "Properties": {
+        "Name": "adhan-nightly-rule-1",
         "ScheduleExpression": "rate(1 hour)",
         "State": "ENABLED",
         "Targets": [
@@ -388,42 +313,49 @@
                 "Arn"
               ]
             },
-            "Id": "nightlySchedule"
+            "Id": "adhan-nightly-rule-1-target"
           }
         ]
       }
     },
-    "NightlyLambdaPermissionEventsRuleSchedule1": {
+    "NightlyEventBridgeLambdaPermission1": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
+        "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
             "NightlyLambdaFunction",
             "Arn"
           ]
         },
-        "Action": "lambda:InvokeFunction",
         "Principal": "events.amazonaws.com",
         "SourceArn": {
-          "Fn::GetAtt": [
-            "NightlyEventsRuleSchedule1",
-            "Arn"
+          "Fn::Join": [
+            ":",
+            [
+              "arn",
+              {
+                "Ref": "AWS::Partition"
+              },
+              "events",
+              {
+                "Ref": "AWS::Region"
+              },
+              {
+                "Ref": "AWS::AccountId"
+              },
+              {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "rule",
+                    "adhan-nightly-rule-1"
+                  ]
+                ]
+              }
+            ]
           ]
         }
-      }
-    },
-    "SkillHandlerLambdaPermissionAlexaSkill1": {
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "FunctionName": {
-          "Fn::GetAtt": [
-            "SkillHandlerLambdaFunction",
-            "Arn"
-          ]
-        },
-        "Action": "lambda:InvokeFunction",
-        "Principal": "alexa-appkit.amazon.com",
-        "EventSourceToken": "amzn1.ask.skill.1be24097-eba2-4571-8ed3-b558619f9a74"
       }
     },
     "AdhanStatsTable": {
@@ -467,38 +399,27 @@
   },
   "Outputs": {
     "ServerlessDeploymentBucketName": {
-      "Value": {
-        "Ref": "ServerlessDeploymentBucket"
-      },
+      "Value": "adhan-skill-deployment-bucket",
       "Export": {
         "Name": "sls-adhan-routines-dev-ServerlessDeploymentBucketName"
-      }
-    },
-    "SkillHandlerLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "SkillHandlerLambdaVersionplJOsLjXPPRrQvYXYCU8WgrpqyRfhTNvYeAx6z3Qg"
-      },
-      "Export": {
-        "Name": "sls-adhan-routines-dev-SkillHandlerLambdaFunctionQualifiedArn"
-      }
-    },
-    "NightlyLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "NightlyLambdaVersionwNynMHNtjcXX1rWf0vXCpOX8HzyxoMUR486TmNWL7c"
-      },
-      "Export": {
-        "Name": "sls-adhan-routines-dev-NightlyLambdaFunctionQualifiedArn"
       }
     },
     "SchedulerMinuteLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "SchedulerMinuteLambdaVersion1AnvIzNILTos2FKP7S1K1LXz2WdoshRdpfyIQqr0OJY"
+        "Ref": "SchedulerMinuteLambdaVersionFmKYhVbH99Cn1aUDC9Mf7mJ76jMBdHkrb40MprEE"
       },
       "Export": {
         "Name": "sls-adhan-routines-dev-SchedulerMinuteLambdaFunctionQualifiedArn"
+      }
+    },
+    "NightlyLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "NightlyLambdaVersionZEjNr5atLE1h1fcbHGjV5lOoROIKI2tm8VnB7KnyEc"
+      },
+      "Export": {
+        "Name": "sls-adhan-routines-dev-NightlyLambdaFunctionQualifiedArn"
       }
     }
   }

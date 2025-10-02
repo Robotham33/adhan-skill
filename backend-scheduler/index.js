@@ -131,7 +131,7 @@ export const handler = async () => {
       console.error(`Erreur postTrigger pour userId=${u.userId}:`, err);
     }
   }));
-// ...no extra closing brace...
+}
 
 // 🌙 Handler “nightly” : rempli todayTimes à ~00:05 local
 exports.nightlyHandler = async () => {
@@ -187,5 +187,4 @@ exports.testTriggerForPrayer = async (userId, prayerName = 'Maghrib') => {
   // Simule le déclenchement à l’horaire de la prière choisie
   await postTrigger(accessToken, userId, audioUrl);
   console.log(`Test routine déclenchée pour ${prayerName} (premium=${isPremium}) avec audio=${audioUrl}`);
-};
-};
+}

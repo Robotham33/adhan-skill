@@ -1,58 +1,11 @@
-functions:
-  nightlyHandler:
-    handler: backend-scheduler/index.nightlyHandler
-    events:
-      - eventBridge:
-          schedule: cron(0 22 * * ? *) # 00h00 Paris (22h00 UTC)
-    environment:
-      TABLE: AdhanUsers
-      TRIGGER_STAGE: production
-      TRIGGER_NAME: AdhanTime
-resources:
-  Resources:
-    AdhanUsersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: AdhanUsers
-        AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: premium
-            AttributeType: N
-        KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: PremiumIndex
-            KeySchema:
-              - AttributeName: premium
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-        BillingMode: PAY_PER_REQUEST
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:Query
-      Resource:
-        - arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers
-        - arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers/index/PremiumIndex
-    - Effect: Allow
-      Action:
-        - ssm:GetParameter
-      Resource:
-        - arn:aws:ssm:eu-west-3:*:parameter/adhan-skill/*
 service: adhan-routines
-frameworkVersion: "3"
 
 provider:
   name: aws
   runtime: nodejs18.x
   region: eu-west-3
+  deploymentBucket:
+    name: adhan-skill-deployment-bucket
   environment:
     TABLE: AdhanUsers
     STATS_TABLE: AdhanStats
@@ -77,53 +30,57 @@ provider:
             - dynamodb:DeleteItem
             - dynamodb:Query
             - dynamodb:Scan
+            - dynamodb:DescribeTable
           Resource:
             - arn:aws:dynamodb:${self:provider.region}:*:table/AdhanUsers
             - arn:aws:dynamodb:${self:provider.region}:*:table/AdhanStats
+        - Effect: Allow
+          Action:
+            - events:DescribeRule
+            - events:PutRule
+            - events:PutTargets
+            - events:RemoveTargets
+            - events:DeleteRule
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+            - ssm:PutParameter
+            - ssm:DeleteParameter
+          Resource: arn:aws:ssm:${self:provider.region}:*:parameter/serverless-framework/*
+        - Effect: Allow
+          Action:
+            - s3:CreateBucket
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:ListBucket
+            - s3:GetObject
+          Resource: "*"
 
 package:
   individually: true
+  patterns:
+    - '!**/*'                           # ignore tout par défaut
+    - 'backend-scheduler/**'            # inclut seulement ton code backend
+    - '!backend-scheduler/node_modules/**'
+    - 'backend-scheduler/node_modules/luxon/**'
+    - 'backend-scheduler/node_modules/node-fetch/**'
+    - 'backend-scheduler/node_modules/adhan/**'
 
 functions:
-  skillHandler:
-    name: adhan-skill-handler
-    handler: index.handler
-    package:
-      patterns:
-        - ../lambda-skill/**
-        - '!../lambda-skill/package-lock.json'
-        - '!../lambda-skill/.git/**'
-        - '!../lambda-skill/tests/**'
-    events:
-      - alexaSkill: amzn1.ask.skill.1be24097-eba2-4571-8ed3-b558619f9a74
-
   schedulerMinute:
     name: adhan-scheduler-minute
     handler: backend-scheduler/index.handler
-    package:
-      patterns:
-        - ../backend-scheduler/**
-        - '!../backend-scheduler/package-lock.json'
-        - '!../backend-scheduler/.git/**'
-        - '!../backend-scheduler/tests/**'
     events:
-      - schedule:
-          rate: rate(1 minute)
-          enabled: true
+      - eventBridge:
+          schedule: rate(1 minute)
 
   nightly:
     name: adhan-nightly
     handler: backend-scheduler/index.nightlyHandler
-    package:
-      patterns:
-        - ../backend-scheduler/**
-        - '!../backend-scheduler/package-lock.json'
-        - '!../backend-scheduler/.git/**'
-        - '!../backend-scheduler/tests/**'
     events:
-      - schedule:
-          rate: rate(1 hour)
-          enabled: true
+      - eventBridge:
+          schedule: rate(1 hour)
 
 resources:
   Resources:
