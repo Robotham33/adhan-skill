@@ -9,7 +9,10 @@ import {
   PauseSchedulingIntentHandler,
   ResumeSchedulingIntentHandler,
   CancelAndStopIntentHandler,
-  FallbackIntentHandler
+  FallbackIntentHandler,
+  BuyPremiumIntentHandler,
+  CancelPremiumIntentHandler,
+  ConnectionsResponseHandler
 } from './handlers/intents.js';
 
 const LaunchRequestHandler = {
@@ -52,6 +55,9 @@ export const handler = Alexa.SkillBuilders.custom()
     ResumeSchedulingIntentHandler,
     CancelAndStopIntentHandler,
     FallbackIntentHandler,
+    BuyPremiumIntentHandler,
+    CancelPremiumIntentHandler,
+    ConnectionsResponseHandler,
     SessionEndedRequestHandler
   )
   .addErrorHandlers(ErrorHandler)

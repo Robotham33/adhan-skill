@@ -1,0 +1,48 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "adhan player",
+      "intents": [
+        {
+          "name": "PlayAdhanIntent",
+          "samples": [
+            "joue l'adhan",
+            "lance l'appel à la prière",
+            "mets l'adhan"
+          ]
+        },
+        {
+          "name": "NextPrayerIntent",
+          "samples": [
+            "quelle est la prochaine prière",
+            "prochain adhan",
+            "à quelle heure est la prochaine prière"
+          ]
+        },
+        {
+          "name": "SetReminderIntent",
+          "samples": [
+            "programme un rappel pour la prière",
+            "rappelle-moi la prière du maghrib",
+            "ajoute un rappel pour la prière du fajr",
+            "rappelle-moi de prier à l'heure",
+            "rappel pour la prière du isha"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        }
+      ],
+      "types": []
+    }
+  }
+}

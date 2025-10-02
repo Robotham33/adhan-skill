@@ -1,3 +1,51 @@
+functions:
+  nightlyHandler:
+    handler: backend-scheduler/index.nightlyHandler
+    events:
+      - eventBridge:
+          schedule: cron(0 22 * * ? *) # 00h00 Paris (22h00 UTC)
+    environment:
+      TABLE: AdhanUsers
+      TRIGGER_STAGE: production
+      TRIGGER_NAME: AdhanTime
+resources:
+  Resources:
+    AdhanUsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: AdhanUsers
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: premium
+            AttributeType: N
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: PremiumIndex
+            KeySchema:
+              - AttributeName: premium
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:Query
+      Resource:
+        - arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers
+        - arn:aws:dynamodb:eu-west-3:*:table/AdhanUsers/index/PremiumIndex
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+      Resource:
+        - arn:aws:ssm:eu-west-3:*:parameter/adhan-skill/*
 service: adhan-routines
 frameworkVersion: "3"
 
