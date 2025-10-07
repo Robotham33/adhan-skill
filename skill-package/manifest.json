@@ -12,16 +12,37 @@
           "Alexa, launch Adhan Player"
         ],
         "keywords": ["adhan", "prayer", "islam", "call to prayer"]
+      },
+      "fr-FR": {
+        "name": "Adhan Musulman",
+        "summary": "Joue l’appel à la prière à la demande ou via vos routines Alexa.",
+        "description": "Adhan Musulman joue l’appel à la prière (adhan) lorsque vous ouvrez la skill ou lorsqu’une routine Alexa la déclenche automatiquement à l’heure des prières. Dites simplement : « Alexa, ouvre Adhan Musulman ».",
+        "examplePhrases": [
+          "Alexa, ouvre Adhan Musulman",
+          "Alexa, demande à Adhan Musulman de jouer l'appel à la prière",
+          "Alexa, lance Adhan Musulman"
+        ],
+        "keywords": ["adhan", "prière", "islam", "musulman"]
       }
     },
     "isAvailableWorldwide": true,
-    "testingInstructions": "Say: 'Alexa, open Adhan Player'. You should hear the adhan via SSML <audio>. The skill ends afterward.",
+    "testingInstructions": "Dites : 'Alexa, ouvre Adhan Musulman'. Vous devriez entendre l'appel à la prière via SSML <audio>. La skill se termine ensuite.",
     "category": "RELIGION_AND_SPIRITUALITY",
     "distributionCountries": []
   },
   "apis": {
     "custom": {
-      "endpoint": { "uri": "arn:aws:lambda:eu-west-3:251894223886:function:adhan-skill-handler" }
+      "endpoint": {
+        "uri": "arn:aws:lambda:eu-west-3:251894223886:function:adhan-skill-handler"
+      },
+      "interfaces": [
+        {
+          "type": "ALEXA_TRIGGER"
+        },
+        {
+          "type": "ALEXA_PRESENTATION_APL"
+        }
+      ]
     }
   },
   "privacyAndCompliance": {
@@ -29,6 +50,10 @@
       "en-US": {
         "privacyPolicyUrl": "https://YOUR-DOMAIN/privacy",
         "termsOfUseUrl": "https://YOUR-DOMAIN/terms"
+      },
+      "fr-FR": {
+        "privacyPolicyUrl": "https://YOUR-DOMAIN/confidentialite",
+        "termsOfUseUrl": "https://YOUR-DOMAIN/conditions"
       }
     },
     "allowsPurchases": false,
@@ -41,5 +66,5 @@
   },
   "permissions": [],
   "events": {},
-  "manifestVersionCode": 1
+  "manifestVersionCode": 2
 }
